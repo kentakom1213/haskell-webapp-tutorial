@@ -2,6 +2,10 @@
 
 Reference Web API code based on servant + esqueleto
 
-to be added shortly ...
+# installation
+
+Note: stack version 1.6 is needed to build this repository with LTS-10.0
+
+.. to be added shortly ...
 
 
