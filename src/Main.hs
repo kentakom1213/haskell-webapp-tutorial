@@ -68,7 +68,7 @@ main = do
     Nothing       -> runNoLoggingT $ createMySQLPool connect_info pool_size
 
   -- 'readerT Config' setting
-  let cfg = Config {getPool = pool, getApplicationText = T.pack . commandLineOptionsApplicationText $ opts, getApplicationFlag = commandLineOptionsApplicationFlag opts}
+  let cfg = MyAppConfig {getPool = pool, getApplicationText = T.pack . commandLineOptionsApplicationText $ opts, getApplicationFlag = commandLineOptionsApplicationFlag opts}
 
   -- Do migration
   unless (commandLineOptionsNoMigration opts) $ doMigration pool
@@ -76,7 +76,7 @@ main = do
   -- Run Application with Config
   print $ "running port: " ++ show port
   print $ "logger " ++ show (commandLineOptionsLogging opts)
-  run port $ logger $ app cfg
+  run port $ logger $ myAppApp cfg
 
 doMigration :: ConnectionPool -> IO ()
 doMigration pool = runResourceT $ runSqlPool (runMigration migrateAll) pool
@@ -85,34 +85,34 @@ doMigration pool = runResourceT $ runSqlPool (runMigration migrateAll) pool
 -- API Server application --
 ----------------------------
 
-api :: Proxy API
-api = Proxy
+myAppApi :: Proxy MyAppAPI
+myAppApi = Proxy
 
-app :: Config -> Application
-app = serve api . appToServer
+myAppApp :: MyAppConfig -> Application
+myAppApp = serve myAppApi . myAppToServer
 
-appToServer :: Config -> Server API
-appToServer cfg = enter (runReaderTNat cfg :: App :~> Sv.Handler) server
+myAppToServer :: MyAppConfig -> Server MyAppAPI
+myAppToServer cfg = enter (runReaderTNat cfg :: MyAppHandler :~> Sv.Handler) myAppServer
 
-type Server' api = ServerT api App
+type MyAppServer api = ServerT api MyAppHandler
 
 ------------------------------
 -- API Handler registration --
 ------------------------------
 
-type API' = "person" :> Capture "person_id" PersonId :> Get '[JSON] ApiPerson
-       :<|> "person" :> ReqBody '[JSON] ApiPersonReqBody :> Post '[JSON] ApiPerson
-       :<|> "persons" :> QueryParam "type" PersonType :> Get '[JSON] [ApiPerson]
-       :<|> "app_text" :> Get '[JSON] T.Text
+type MyAppAPI' = "person" :> Capture "person_id" PersonId :> Get '[JSON] ApiPerson
+            :<|> "person" :> ReqBody '[JSON] ApiPersonReqBody :> Post '[JSON] ApiPerson
+            :<|> "persons" :> QueryParam "type" PersonType :> Get '[JSON] [ApiPerson]
+            :<|> "app_text" :> Get '[JSON] T.Text
 
 -- add "/api" prefix
-type API = "api" :> API'
+type MyAppAPI = "api" :> MyAppAPI'
 
-server :: Server' API
-server = getPerson
-    :<|> postPerson
-    :<|> getPersonList
-    :<|> printAppText
+myAppServer :: MyAppServer MyAppAPI
+myAppServer = getPerson
+         :<|> postPerson
+         :<|> getPersonList
+         :<|> printAppText
 
 -----------------------------
 -- Command line processing --

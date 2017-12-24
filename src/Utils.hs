@@ -23,15 +23,14 @@ import           Servant as Sv
 -- Type definition --
 ---------------------
 
-data Config
-    = Config
-    { getPool :: ConnectionPool
-    -- sample 'global settings'
-    , getApplicationText :: T.Text
-    , getApplicationFlag :: Bool
-    }
+data MyAppConfig = MyAppConfig
+                   { getPool :: ConnectionPool
+                                -- sample 'global settings'
+                   , getApplicationText :: T.Text
+                   , getApplicationFlag :: Bool
+                   }
 
-type App = ReaderT Config Sv.Handler
+type MyAppHandler = ReaderT MyAppConfig Sv.Handler
 
 type SqlPersistM' = SqlPersistT (ResourceT IO)
 
@@ -39,12 +38,12 @@ type SqlPersistM' = SqlPersistT (ResourceT IO)
 -- SQL and error handlers --
 ----------------------------
 
-runSql :: (MonadReader Config m, MonadIO m) => SqlPersistM' b -> m b
+runSql :: (MonadReader MyAppConfig m, MonadIO m) => SqlPersistM' b -> m b
 runSql query = do
     pool <- asks getPool
     liftIO $ runResourceT $ runSqlPool query pool
 
-errorHandler :: App a -> App a
+errorHandler :: MyAppHandler a -> MyAppHandler a
 errorHandler = flip catches [Ex.Handler (\(e::ServantErr) -> do
                                             runSql $ logError' $ T.pack $ show e
                                             throwError e)
