@@ -4,7 +4,6 @@ module Handler1 where
 
 import           Control.Exception.Safe (throwM)
 import           Control.Monad.Reader   (asks)
-import           Data.Maybe             as M (fromJust, isNothing)
 import           Data.Text              as T (Text)
 import           Database.Esqueleto
 import           Servant
@@ -15,9 +14,9 @@ import           Types
 import           Utils
 
 getPersonList :: Maybe PersonType -> MyAppHandler [ApiPerson]
-getPersonList ptype = errorHandler $ runSql $ do
+getPersonList maybe_ptype = errorHandler $ runSql $ do
   plist <- select $ from $ \p -> do
-    where_ (if M.isNothing ptype then val True else p ^. PersonType ==. val (fromJust ptype))
+    where_ $ maybe (val True) (\ptype -> p ^. PersonType ==. val ptype) maybe_ptype
     return p
 
   return $ toApiPersonFE <$> plist

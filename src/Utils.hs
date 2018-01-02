@@ -8,7 +8,7 @@ import           Cases (snakify)
 import           Control.Exception (ErrorCall)
 import           Control.Exception.Safe as Ex (Handler(Handler), catches, throwM)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Reader (MonadIO, MonadReader, ReaderT, ask, asks)
+import           Control.Monad.Reader (MonadIO, MonadReader, ReaderT, ask, asks, runReaderT)
 import           Control.Monad.Logger (logDebugNS, logErrorNS, logInfoNS, logWarnNS, runLoggingT)
 import           Control.Monad.Trans.Resource (ResourceT, runResourceT)
 import qualified Data.ByteString.Lazy.Char8 as LBS (ByteString, pack)
@@ -32,7 +32,7 @@ data MyAppConfig = MyAppConfig
 
 type MyAppHandler = ReaderT MyAppConfig Sv.Handler
 
-type SqlPersistM' = SqlPersistT (ResourceT IO)
+type SqlPersistM' = SqlPersistT (ResourceT (ReaderT MyAppConfig IO))
 
 ----------------------------
 -- SQL and error handlers --
@@ -40,8 +40,9 @@ type SqlPersistM' = SqlPersistT (ResourceT IO)
 
 runSql :: (MonadReader MyAppConfig m, MonadIO m) => SqlPersistM' b -> m b
 runSql query = do
+    config <- ask
     pool <- asks getPool
-    liftIO $ runResourceT $ runSqlPool query pool
+    liftIO $ flip runReaderT config $ runResourceT $ runSqlPool query pool
 
 errorHandler :: MyAppHandler a -> MyAppHandler a
 errorHandler = flip catches [Ex.Handler (\(e::ServantErr) -> do
