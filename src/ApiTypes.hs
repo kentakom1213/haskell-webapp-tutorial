@@ -18,14 +18,6 @@ import Types
 import Model
 import Utils
 
--- helper operator to enable 'Maybe (Maybe a)' type
-(.:??) :: (FromJSON a) => Object -> Text -> Parser (Maybe (Maybe a))
-obj .:?? key = case HM.lookup key obj of
-               Nothing -> pure Nothing
-               Just Null  -> pure $ Just Nothing
-               Just v  -> parseJSON v <?> Key key
-{-# INLINE (.:??) #-}
-
 -----------------------------------------
 -- API type defintion for API response --
 -----------------------------------------
@@ -69,7 +61,7 @@ data ApiPersonReqBody = ApiPersonReqBody
 instance FromJSON ApiPersonReqBody where
   parseJSON = withObject "apipersonreqbody" $ \o -> do
     apiPersonReqBodyName <- o .:? "name"
-    apiPersonReqBodyAge <- o .:?? "age"
+    apiPersonReqBodyAge <- o .:! "age"
     apiPersonReqBodyType <- o .:? "type"
     return ApiPersonReqBody{..}
 

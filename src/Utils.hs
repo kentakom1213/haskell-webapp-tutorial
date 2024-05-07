@@ -16,7 +16,8 @@ import           Data.Char (toLower)
 import           Data.Text as T (Text, pack, unpack)
 import           Data.Time (TimeZone(TimeZone), UTCTime, ZonedTime, addUTCTime, getCurrentTime, utcToZonedTime, zonedTimeToUTC)
 import           Database.MySQL.Base (MySQLError)
-import           Database.Persist.MySQL (ConnectionPool, PersistException, SqlPersistT, connLogFunc, runSqlPool)
+import           Database.Persist.MySQL (ConnectionPool, PersistException, SqlPersistT, runSqlPool)
+import           Database.Persist.Sql.Types.Internal (connLogFunc)
 import           Servant as Sv
 
 ---------------------
@@ -45,7 +46,7 @@ runSql query = do
     liftIO $ flip runReaderT config $ runResourceT $ runSqlPool query pool
 
 errorHandler :: MyAppHandler a -> MyAppHandler a
-errorHandler = flip catches [Ex.Handler (\(e::ServantErr) -> do
+errorHandler = flip catches [Ex.Handler (\(e::ServerError) -> do
                                             runSql $ logError' $ T.pack $ show e
                                             throwError e)
                            , Ex.Handler (\(e::PersistException) -> do
@@ -58,15 +59,15 @@ errorHandler = flip catches [Ex.Handler (\(e::ServantErr) -> do
                                          runSql $ logError' $ T.pack $ show e
                                          throwError err400 {errBody = LBS.pack $ show e})]
 
-fromJustWithError :: (ServantErr, LBS.ByteString) -> Maybe a -> SqlPersistM' a
+fromJustWithError :: (ServerError, LBS.ByteString) -> Maybe a -> SqlPersistM' a
 fromJustWithError (err,ebody) Nothing = throwM err {errBody = ebody}
 fromJustWithError _ (Just a) = return a
 
-headWithError :: (ServantErr, LBS.ByteString) -> [a] -> SqlPersistM' a
+headWithError :: (ServerError, LBS.ByteString) -> [a] -> SqlPersistM' a
 headWithError (err,ebody) [] = throwM err {errBody = ebody}
 headWithError _ a = return $ head a
 
-rightWithError :: (ServantErr,LBS.ByteString) -> Either l r -> SqlPersistM' r
+rightWithError :: (ServerError,LBS.ByteString) -> Either l r -> SqlPersistM' r
 rightWithError (err,ebody) (Left _) = throwM err {errBody = ebody}
 rightWithError _ (Right r) = return r
 ------------------------------------

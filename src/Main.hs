@@ -7,15 +7,12 @@ module Main where
 import           Control.Monad                        (unless)
 import           Control.Monad.Logger                 (logInfoNS, runNoLoggingT,
                                                        runStdoutLoggingT)
+import           Control.Monad.Reader                 (ReaderT, runReaderT)
 import           Control.Monad.Trans.Resource         (runResourceT)
-import           Data.Default                         (def)
-import           Data.Semigroup                       ((<>))
 import           Data.Text                            as T (Text, pack)
-import           Data.Text.Encoding                   (decodeUtf8)
 import           Database.Persist.MySQL               (ConnectionPool,
                                                        createMySQLPool,
                                                        runMigration, runSqlPool)
-import           Network.Wai                          (Application)
 import           Network.Wai.Handler.Warp             (run)
 import           Network.Wai.Middleware.RequestLogger (Destination (Callback),
                                                        OutputFormat (Detailed),
@@ -25,7 +22,6 @@ import           Network.Wai.Middleware.RequestLogger (Destination (Callback),
 import           Options.Applicative
 import           Servant                              as Sv
 import           System.Log.FastLogger                (fromLogStr)
-import           System.Log.MonadLogger.Syslog        (runSyslogLoggingT)
 
 import           ApiTypes
 import           DBSetting
@@ -51,8 +47,9 @@ main = do
   -- logger setting
   (m_loggingT, logger) <- case commandLineOptionsLogging opts of
     LoggingSyslog -> do
-      logSyslog <- mkRequestLogger def {destination = Callback $ runSyslogLoggingT . logInfoNS "Log" . decodeUtf8 . fromLogStr, outputFormat = Detailed False}
-      return (Just runSyslogLoggingT, logSyslog)
+      -- logSyslog <- mkRequestLogger def {destination = Callback $ runSyslogLoggingT . logInfoNS "Log" . decodeUtf8 . fromLogStr, outputFormat = Detailed False}
+      -- return (Just runSyslogLoggingT, logSyslog)
+      return (Nothing, id)
     LoggingStdout -> return (Just runStdoutLoggingT, logStdout)
     LoggingNone -> return (Nothing, id)
 
@@ -89,12 +86,10 @@ myAppApi :: Proxy MyAppAPI
 myAppApi = Proxy
 
 myAppApp :: MyAppConfig -> Application
-myAppApp = serve myAppApi . myAppToServer
+myAppApp cfg = serve myAppApi $ hoistServer myAppApi (nt cfg) myAppServer
 
-myAppToServer :: MyAppConfig -> Server MyAppAPI
-myAppToServer cfg = enter (runReaderTNat cfg :: MyAppHandler :~> Sv.Handler) myAppServer
-
-type MyAppServer api = ServerT api MyAppHandler
+nt :: MyAppConfig -> MyAppHandler a -> Handler a
+nt s x = runReaderT x s
 
 ------------------------------
 -- API Handler registration --
@@ -108,7 +103,7 @@ type MyAppAPI' = "person" :> Capture "person_id" PersonId :> Get '[JSON] ApiPers
 -- add "/api" prefix
 type MyAppAPI = "api" :> MyAppAPI'
 
-myAppServer :: MyAppServer MyAppAPI
+myAppServer :: ServerT MyAppAPI MyAppHandler
 myAppServer = getPerson
          :<|> postPerson
          :<|> getPersonList
