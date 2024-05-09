@@ -7,7 +7,7 @@ module Main where
 import           Control.Monad                        (unless)
 import           Control.Monad.Logger                 (logInfoNS, runNoLoggingT,
                                                        runStdoutLoggingT)
-import           Control.Monad.Reader                 (ReaderT)
+import           Control.Monad.Reader                 (ReaderT, runReaderT)
 import           Control.Monad.Trans.Resource         (runResourceT)
 import           Data.Text                            as T (Text, pack)
 import           Database.Persist.MySQL               (ConnectionPool,
