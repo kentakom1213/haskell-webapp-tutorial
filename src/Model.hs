@@ -24,7 +24,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   Account
     name Text
     age Int Maybe
-    type PersonType
+    type AccountType
 
     deriving Show
 |]

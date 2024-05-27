@@ -13,29 +13,29 @@ import           Model
 import           Types
 import           Utils
 
-getPersonList :: Maybe PersonType -> MyAppHandler [ApiPerson]
-getPersonList maybe_ptype = errorHandler $ runSql $ do
+getAccountList :: Maybe AccountType -> MyAppHandler [ApiAccount]
+getAccountList maybe_ptype = errorHandler $ runSql $ do
   plist <- select $ from $ \p -> do
     where_ $ maybe (val True) (\ptype -> p ^. AccountType ==. val ptype) maybe_ptype
     return p
 
-  return $ toApiPersonFE <$> plist
+  return $ toApiAccountFE <$> plist
 
-getPerson :: AccountId -> MyAppHandler ApiPerson
-getPerson pid = errorHandler $ runSql $ getPerson' pid
+getAccount :: AccountId -> MyAppHandler ApiAccount
+getAccount pid = errorHandler $ runSql $ getAccount' pid
 
-getPerson' :: AccountId -> SqlPersistM' ApiPerson
-getPerson' pid = do
+getAccount' :: AccountId -> SqlPersistM' ApiAccount
+getAccount' pid = do
   p <- fromJustWithError (err404, "No such person ID") =<< get pid
 
-  return $ toApiPerson pid p
+  return $ toApiAccount pid p
 
-postPerson :: ApiPersonReqBody -> MyAppHandler ApiPerson
-postPerson ApiPersonReqBody {apiPersonReqBodyName = Just name, apiPersonReqBodyAge = Just age, apiPersonReqBodyType = Just ptype} = errorHandler $ runSql $ do
+postAccount :: ApiAccountReqBody -> MyAppHandler ApiAccount
+postAccount ApiAccountReqBody {apiAccountReqBodyName = Just name, apiAccountReqBodyAge = Just age, apiAccountReqBodyType = Just ptype} = errorHandler $ runSql $ do
   pid <- insert Account {accountName = name, accountAge = age, accountType = ptype}
-  getPerson' pid
+  getAccount' pid
 
-postPerson _ = throwM err400 {errBody = "Invalid request body"}
+postAccount _ = throwM err400 {errBody = "Invalid request body"}
 
 printAppText :: MyAppHandler T.Text
 printAppText = do

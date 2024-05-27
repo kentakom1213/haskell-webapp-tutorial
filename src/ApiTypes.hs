@@ -22,24 +22,24 @@ import Utils
 -- API type defintion for API response --
 -----------------------------------------
 
-data ApiPerson = ApiPerson
-  { apiPersonId :: AccountId
-  , apiPersonName :: Text
-  , apiPersonAge :: Maybe Int
-  , apiPersonType :: PersonType
+data ApiAccount = ApiAccount
+  { apiAccountId :: AccountId
+  , apiAccountName :: Text
+  , apiAccountAge :: Maybe Int
+  , apiAccountType :: AccountType
   } deriving (Generic, Show)
-deriveToJSON defaultOptions {fieldLabelModifier = drop 9} ''ApiPerson
+deriveToJSON defaultOptions {fieldLabelModifier = drop 9} ''ApiAccount
 
-toApiPerson :: AccountId -> Account -> ApiPerson
-toApiPerson pid p = ApiPerson {apiPersonId = pid, apiPersonName = accountName p, apiPersonAge = accountAge p, apiPersonType = accountType p}
+toApiAccount :: AccountId -> Account -> ApiAccount
+toApiAccount pid p = ApiAccount {apiAccountId = pid, apiAccountName = accountName p, apiAccountAge = accountAge p, apiAccountType = accountType p}
 
-toApiPersonFE :: Entity Account -> ApiPerson
-toApiPersonFE (Entity pid p) = toApiPerson pid p
+toApiAccountFE :: Entity Account -> ApiAccount
+toApiAccountFE (Entity pid p) = toApiAccount pid p
 
 -- data ApiBlogPost = ApiBlogPost
 --   { apiBlogPostId :: BlogPostId
 --   , apiBlogPostTitle :: Text
---   , apiBlogPostAuthorId :: PersonId
+--   , apiBlogPostAuthorId :: AccountId
 --   , apiBlogPostTimestamp :: ZonedTime
 --   } deriving (Generic, Show)
 
@@ -52,22 +52,22 @@ toApiPersonFE (Entity pid p) = toApiPerson pid p
 -- API type defintion for API request --
 ----------------------------------------
 
-data ApiPersonReqBody = ApiPersonReqBody
-  { apiPersonReqBodyName :: Maybe Text
-  , apiPersonReqBodyAge :: Maybe (Maybe Int)
-  , apiPersonReqBodyType :: Maybe PersonType
+data ApiAccountReqBody = ApiAccountReqBody
+  { apiAccountReqBodyName :: Maybe Text
+  , apiAccountReqBodyAge :: Maybe (Maybe Int)
+  , apiAccountReqBodyType :: Maybe AccountType
   } deriving (Generic, Show)
 
-instance FromJSON ApiPersonReqBody where
+instance FromJSON ApiAccountReqBody where
   parseJSON = withObject "apipersonreqbody" $ \o -> do
-    apiPersonReqBodyName <- o .:? "name"
-    apiPersonReqBodyAge <- o .:! "age"
-    apiPersonReqBodyType <- o .:? "type"
-    return ApiPersonReqBody{..}
+    apiAccountReqBodyName <- o .:? "name"
+    apiAccountReqBodyAge <- o .:! "age"
+    apiAccountReqBodyType <- o .:? "type"
+    return ApiAccountReqBody{..}
 
 -- data ApiBlogPostReqBody = ApiBlogPostReqBody
 --   { apiBlogPostReqBodyTitle :: Maybe Text
---   , apiBlogPostReqBodyAuthorInd :: Maybe PersonId
+--   , apiBlogPostReqBodyAuthorInd :: Maybe AccountId
 --   , apiBlogPostReqBodyTimestamp :: Maybe ZonedTime
 --   } deriving (Generic, Show)
 
