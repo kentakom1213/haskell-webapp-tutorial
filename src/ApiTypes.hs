@@ -36,6 +36,27 @@ toApiAccount pid p = ApiAccount {apiAccountId = pid, apiAccountName = accountNam
 toApiAccountFE :: Entity Account -> ApiAccount
 toApiAccountFE (Entity pid p) = toApiAccount pid p
 
+data ApiItem = ApiItem
+  { apiItemId :: ItemId
+  , apiItemTitle :: Text
+  , apiItemDescription :: Text
+  , apiItemDeadline :: ZonedTime
+  , apiItemAccountId :: AccountId
+  } deriving (Generic, Show)
+deriveToJSON defaultOptions {fieldLabelModifier = drop 7} ''ApiItem
+
+toApiItem :: ItemId -> Item -> ApiItem
+toApiItem iid i = ApiItem
+  { apiItemId = iid
+  , apiItemTitle = itemTitle i
+  , apiItemDescription = itemDescription i
+  , apiItemDeadline = toLocalTime (itemDeadline i)
+  , apiItemAccountId = itemAccountId i
+  }
+
+toApiItemFE :: Entity Item -> ApiItem
+toApiItemFE (Entity iid i) = toApiItem iid i
+
 -- data ApiBlogPost = ApiBlogPost
 --   { apiBlogPostId :: BlogPostId
 --   , apiBlogPostTitle :: Text
@@ -64,6 +85,23 @@ instance FromJSON ApiAccountReqBody where
     apiAccountReqBodyAge <- o .:! "age"
     apiAccountReqBodyType <- o .:? "type"
     return ApiAccountReqBody{..}
+
+data ApiItemReqBody = ApiItemReqBody
+  { apiItemReqBodyTitle :: Maybe Text
+  , apiItemReqBodyDescription :: Maybe Text
+  , apiItemReqBodyDeadline :: Maybe ZonedTime
+  , apiItemReqBodyAccountId :: Maybe AccountId
+  } deriving (Generic, Show)
+
+instance FromJSON ApiItemReqBody where
+  parseJSON = withObject
+    "apiitemreqbody"
+    (\o -> do
+       apiItemReqBodyTitle <- o .:? "title"
+       apiItemReqBodyDescription <- o .:? "description"
+       apiItemReqBodyDeadline <- o .:? "deadline"
+       apiItemReqBodyAccountId <- o .:? "account_id"
+       return ApiItemReqBody {..})
 
 -- data ApiBlogPostReqBody = ApiBlogPostReqBody
 --   { apiBlogPostReqBodyTitle :: Maybe Text

@@ -26,16 +26,45 @@ getAccount pid = errorHandler $ runSql $ getAccount' pid
 
 getAccount' :: AccountId -> SqlPersistM' ApiAccount
 getAccount' pid = do
-  p <- fromJustWithError (err404, "No such person ID") =<< get pid
+  p <- fromJustWithError (err404, "No such account ID") =<< get pid
 
   return $ toApiAccount pid p
 
 postAccount :: ApiAccountReqBody -> MyAppHandler ApiAccount
-postAccount ApiAccountReqBody {apiAccountReqBodyName = Just name, apiAccountReqBodyAge = Just age, apiAccountReqBodyType = Just ptype} = errorHandler $ runSql $ do
-  pid <- insert Account {accountName = name, accountAge = age, accountType = ptype}
-  getAccount' pid
+postAccount ApiAccountReqBody
+    { apiAccountReqBodyName = Just name
+    , apiAccountReqBodyAge = Just age
+    , apiAccountReqBodyType = Just ptype
+    } = errorHandler $ runSql $ do
+  getAccount' =<< insert Account
+    { accountName = name
+    , accountAge = age
+    , accountType = ptype
+    }
 
 postAccount _ = throwM err400 {errBody = "Invalid request body"}
+
+
+--- Item
+getItem' :: ItemId -> SqlPersistM' ApiItem
+getItem' iid = do
+  i <- fromJustWithError (err404, "No such item ID") =<< get iid
+
+  return $ toApiItem iid i
+
+postItem :: ApiItemReqBody -> MyAppHandler ApiItem
+postItem ApiItemReqBody
+    { apiItemReqBodyTitle = Just title
+    , apiItemReqBodyDescription = Just description
+    , apiItemReqBodyDeadline = Just deadline
+    , apiItemReqBodyAccountId = Just pid
+    } = errorHandler $ runSql $ do
+  getItem' =<< insert Item
+    { itemTitle = title
+    , itemDescription = description
+    , itemDeadline = fromLocalTime deadline
+    , itemAccountId = pid
+    }
 
 printAppText :: MyAppHandler T.Text
 printAppText = do
