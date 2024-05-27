@@ -23,17 +23,17 @@ import Utils
 -----------------------------------------
 
 data ApiPerson = ApiPerson
-  { apiPersonId :: PersonId
+  { apiPersonId :: AccountId
   , apiPersonName :: Text
   , apiPersonAge :: Maybe Int
   , apiPersonType :: PersonType
   } deriving (Generic, Show)
 deriveToJSON defaultOptions {fieldLabelModifier = drop 9} ''ApiPerson
 
-toApiPerson :: PersonId -> Person -> ApiPerson
-toApiPerson pid p = ApiPerson {apiPersonId = pid, apiPersonName = personName p, apiPersonAge = personAge p, apiPersonType = personType p}
+toApiPerson :: AccountId -> Account -> ApiPerson
+toApiPerson pid p = ApiPerson {apiPersonId = pid, apiPersonName = accountName p, apiPersonAge = accountAge p, apiPersonType = accountType p}
 
-toApiPersonFE :: Entity Person -> ApiPerson
+toApiPersonFE :: Entity Account -> ApiPerson
 toApiPersonFE (Entity pid p) = toApiPerson pid p
 
 -- data ApiBlogPost = ApiBlogPost

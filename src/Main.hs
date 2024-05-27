@@ -95,7 +95,7 @@ nt s x = runReaderT x s
 -- API Handler registration --
 ------------------------------
 
-type MyAppAPI' = "person" :> Capture "person_id" PersonId :> Get '[JSON] ApiPerson
+type MyAppAPI' = "person" :> Capture "person_id" AccountId :> Get '[JSON] ApiPerson
             :<|> "person" :> ReqBody '[JSON] ApiPersonReqBody :> Post '[JSON] ApiPerson
             :<|> "persons" :> QueryParam "type" PersonType :> Get '[JSON] [ApiPerson]
             :<|> "app_text" :> Get '[JSON] T.Text

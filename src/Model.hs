@@ -21,7 +21,7 @@ import           Types
 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-  Person
+  Account
     name Text
     age Int Maybe
     type PersonType
