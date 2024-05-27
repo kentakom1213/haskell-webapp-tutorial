@@ -100,6 +100,7 @@ type MyAppAPI' = "account" :> Capture "account_id" AccountId :> Get '[JSON] ApiA
             :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
             :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
             :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] ApiItem
+            :<|> "items" :> Get '[JSON] [ApiItem]
             :<|> "app_text" :> Get '[JSON] T.Text
 
 -- add "/api" prefix
@@ -111,6 +112,7 @@ myAppServer = getAccount
          :<|> getAccountItems
          :<|> getAccountList
          :<|> postItem
+         :<|> getItemList
          :<|> printAppText
 
 -----------------------------

@@ -52,8 +52,14 @@ getAccountItems pid = errorHandler $ runSql $ do
 
   return $ toApiItemFE <$> ilist
 
-
 --- Item
+getItemList :: MyAppHandler [ApiItem]
+getItemList = errorHandler $ runSql $ do
+  ilist <- select $ from $ \i -> do
+    return i
+
+  return $ toApiItemFE <$> ilist
+
 getItem' :: ItemId -> SqlPersistM' ApiItem
 getItem' iid = do
   i <- fromJustWithError (err404, "No such item ID") =<< get iid
@@ -74,6 +80,9 @@ postItem ApiItemReqBody
     , itemAccountId = pid
     }
 
+postItem _ = throwM err400 {errBody = "Invalid request body"}
+
+-- App text
 printAppText :: MyAppHandler T.Text
 printAppText = do
   app_text <- asks getApplicationText
