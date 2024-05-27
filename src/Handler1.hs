@@ -44,6 +44,14 @@ postAccount ApiAccountReqBody
 
 postAccount _ = throwM err400 {errBody = "Invalid request body"}
 
+getAccountItems :: AccountId -> MyAppHandler [ApiItem]
+getAccountItems pid = errorHandler $ runSql $ do
+  ilist <- select $ from $ \i -> do
+    where_ (i ^. ItemAccountId ==. val pid)
+    return i
+
+  return $ toApiItemFE <$> ilist
+
 
 --- Item
 getItem' :: ItemId -> SqlPersistM' ApiItem

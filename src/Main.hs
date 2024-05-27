@@ -97,6 +97,7 @@ nt s x = runReaderT x s
 
 type MyAppAPI' = "account" :> Capture "account_id" AccountId :> Get '[JSON] ApiAccount
             :<|> "account" :> ReqBody '[JSON] ApiAccountReqBody :> Post '[JSON] ApiAccount
+            :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
             :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
             :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] ApiItem
             :<|> "app_text" :> Get '[JSON] T.Text
@@ -107,6 +108,7 @@ type MyAppAPI = "api" :> MyAppAPI'
 myAppServer :: ServerT MyAppAPI MyAppHandler
 myAppServer = getAccount
          :<|> postAccount
+         :<|> getAccountItems
          :<|> getAccountList
          :<|> postItem
          :<|> printAppText
