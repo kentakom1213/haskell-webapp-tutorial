@@ -27,6 +27,14 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     type AccountType
 
     deriving Show
+
+  Item
+    title Text
+    description Text
+    deadline UTCTime
+    accountId AccountId
+
+    deriving Show
 |]
 
   -- Item
