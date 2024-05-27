@@ -1,0 +1,110 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           servant-esqueleto-sample
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/stacktest3#readme>
+homepage:       https://github.com/cyclone_t/servant-esqueleto-sample#readme
+bug-reports:    https://github.com/cyclone_t/servant-esqueleto-sample/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2024 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/cyclone_t/servant-esqueleto-sample
+
+library
+  exposed-modules:
+      ApiTypes
+      DBSetting
+      Handler1
+      Main
+      Model
+      Types
+      Utils
+  other-modules:
+      Paths_servant_esqueleto_sample
+  autogen-modules:
+      Paths_servant_esqueleto_sample
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , cases
+    , data-default
+    , esqueleto
+    , fast-logger
+    , monad-logger
+    , mtl
+    , mysql
+    , natural-transformation
+    , optparse-applicative
+    , persistent
+    , persistent-mysql
+    , resourcet
+    , safe-exceptions
+    , servant
+    , servant-server
+    , text
+    , time
+    , unordered-containers
+    , wai
+    , wai-extra
+    , warp
+  default-language: Haskell2010
+
+executable servant-esqueleto-sample
+  main-is: Main.hs
+  other-modules:
+      ApiTypes
+      DBSetting
+      Handler1
+      Model
+      Types
+      Utils
+      Paths_servant_esqueleto_sample
+  autogen-modules:
+      Paths_servant_esqueleto_sample
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , cases
+    , data-default
+    , esqueleto
+    , fast-logger
+    , monad-logger
+    , mtl
+    , mysql
+    , natural-transformation
+    , optparse-applicative
+    , persistent
+    , persistent-mysql
+    , resourcet
+    , safe-exceptions
+    , servant
+    , servant-esqueleto-sample
+    , servant-server
+    , text
+    , time
+    , unordered-containers
+    , wai
+    , wai-extra
+    , warp
+  default-language: Haskell2010
