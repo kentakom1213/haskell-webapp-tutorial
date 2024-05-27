@@ -19,6 +19,7 @@ import           Database.Persist.TH
 
 import           Types
 
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   Person
     name Text
@@ -26,17 +27,33 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     type PersonType
 
     deriving Show
-
-  BlogPost
-    title Text
-    authorId PersonId
-    timestamp UTCTime
-
-    deriving Show
-
-  Follow
-    follower PersonId
-    followed PersonId
-
-    deriving Show
 |]
+
+  -- Item
+  --   name Text
+  --   accountId AccountId
+
+  --   deriving Show
+
+
+-- share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+--   Person
+--     name Text
+--     age Int Maybe
+--     type PersonType
+
+--     deriving Show
+
+--   BlogPost
+--     title Text
+--     authorId PersonId
+--     timestamp UTCTime
+
+--     deriving Show
+
+--   Follow
+--     follower PersonId
+--     followed PersonId
+
+--     deriving Show
+-- |]

@@ -36,17 +36,17 @@ toApiPerson pid p = ApiPerson {apiPersonId = pid, apiPersonName = personName p, 
 toApiPersonFE :: Entity Person -> ApiPerson
 toApiPersonFE (Entity pid p) = toApiPerson pid p
 
-data ApiBlogPost = ApiBlogPost
-  { apiBlogPostId :: BlogPostId
-  , apiBlogPostTitle :: Text
-  , apiBlogPostAuthorId :: PersonId
-  , apiBlogPostTimestamp :: ZonedTime
-  } deriving (Generic, Show)
+-- data ApiBlogPost = ApiBlogPost
+--   { apiBlogPostId :: BlogPostId
+--   , apiBlogPostTitle :: Text
+--   , apiBlogPostAuthorId :: PersonId
+--   , apiBlogPostTimestamp :: ZonedTime
+--   } deriving (Generic, Show)
 
-deriveToJSON defaultOptions {fieldLabelModifier = snakeKey 11} ''ApiBlogPost
+-- deriveToJSON defaultOptions {fieldLabelModifier = snakeKey 11} ''ApiBlogPost
 
-toApiBlogPost :: BlogPostId -> BlogPost -> ApiBlogPost
-toApiBlogPost bpid bp = ApiBlogPost {apiBlogPostId = bpid, apiBlogPostTitle = blogPostTitle bp, apiBlogPostAuthorId = blogPostAuthorId bp, apiBlogPostTimestamp = toLocalTime . blogPostTimestamp $ bp}
+-- toApiBlogPost :: BlogPostId -> BlogPost -> ApiBlogPost
+-- toApiBlogPost bpid bp = ApiBlogPost {apiBlogPostId = bpid, apiBlogPostTitle = blogPostTitle bp, apiBlogPostAuthorId = blogPostAuthorId bp, apiBlogPostTimestamp = toLocalTime . blogPostTimestamp $ bp}
 
 ----------------------------------------
 -- API type defintion for API request --
@@ -65,10 +65,10 @@ instance FromJSON ApiPersonReqBody where
     apiPersonReqBodyType <- o .:? "type"
     return ApiPersonReqBody{..}
 
-data ApiBlogPostReqBody = ApiBlogPostReqBody
-  { apiBlogPostReqBodyTitle :: Maybe Text
-  , apiBlogPostReqBodyAuthorInd :: Maybe PersonId
-  , apiBlogPostReqBodyTimestamp :: Maybe ZonedTime
-  } deriving (Generic, Show)
+-- data ApiBlogPostReqBody = ApiBlogPostReqBody
+--   { apiBlogPostReqBodyTitle :: Maybe Text
+--   , apiBlogPostReqBodyAuthorInd :: Maybe PersonId
+--   , apiBlogPostReqBodyTimestamp :: Maybe ZonedTime
+--   } deriving (Generic, Show)
 
-deriveFromJSON defaultOptions {fieldLabelModifier = snakeKey 12} ''ApiBlogPostReqBody
+-- deriveFromJSON defaultOptions {fieldLabelModifier = snakeKey 12} ''ApiBlogPostReqBody
