@@ -16,6 +16,7 @@ module Model where
 import           Data.Text (Text)
 import           Data.Time (UTCTime)
 import           Database.Persist.TH
+import           Elm.Derive (defaultOptions, deriveElmDef)
 
 import           Types
 
@@ -37,31 +38,5 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     deriving Show
 |]
 
-  -- Item
-  --   name Text
-  --   accountId AccountId
-
-  --   deriving Show
-
-
--- share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
---   Person
---     name Text
---     age Int Maybe
---     type PersonType
-
---     deriving Show
-
---   BlogPost
---     title Text
---     authorId PersonId
---     timestamp UTCTime
-
---     deriving Show
-
---   Follow
---     follower PersonId
---     followed PersonId
-
---     deriving Show
--- |]
+deriveElmDef defaultOptions ''AccountId
+deriveElmDef defaultOptions ''ItemId

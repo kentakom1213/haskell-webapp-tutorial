@@ -44,6 +44,7 @@ dependencies:
 - wai
 - wai-extra
 - warp
+- elm-bridge
 
 ghc-options:
 - -Wall

@@ -45,6 +45,7 @@ library
     , bytestring
     , cases
     , data-default
+    , elm-bridge
     , esqueleto
     , fast-logger
     , monad-logger
@@ -87,6 +88,7 @@ executable servant-esqueleto-sample
     , bytestring
     , cases
     , data-default
+    , elm-bridge
     , esqueleto
     , fast-logger
     , monad-logger

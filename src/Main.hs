@@ -72,6 +72,7 @@ main = do
 
   -- Run Application with Config
   print $ "running port: " ++ show port
+  putStrLn $ elmApiExport
   print $ "logger " ++ show (commandLineOptionsLogging opts)
   run port $ logger $ myAppApp cfg
 

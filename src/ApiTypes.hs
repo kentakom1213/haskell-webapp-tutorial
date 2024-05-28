@@ -7,12 +7,16 @@ module ApiTypes where
 
 import           Data.Aeson.Internal (JSONPathElement(Key), (<?>))
 import           Data.Aeson.TH (deriveFromJSON, deriveToJSON)
-import           Data.Aeson.Types
+import           Data.Aeson as Json
 import           Data.HashMap.Strict as HM (lookup)
 import           Data.Text as T (Text)
 import           Data.Time (ZonedTime)
 import           Database.Esqueleto (Entity(Entity))
 import           GHC.Generics (Generic)
+import           Data.Proxy (Proxy (..))
+import           Elm.Module (DefineElm (..), defaultTypeAlterations, makeElmModule, makeModuleContentWithAlterations, recAlterType)
+import           Elm.TyRep (ETCon (..), EType (..), ETypeDef)
+import           Elm.Derive
 
 import Types
 import Model
@@ -28,7 +32,8 @@ data ApiAccount = ApiAccount
   , apiAccountAge :: Maybe Int
   , apiAccountType :: AccountType
   } deriving (Generic, Show)
-deriveToJSON defaultOptions {fieldLabelModifier = drop 9} ''ApiAccount
+deriveToJSON Json.defaultOptions {fieldLabelModifier = drop 10} ''ApiAccount
+deriveElmDef Json.defaultOptions {fieldLabelModifier = drop 10} ''ApiAccount
 
 toApiAccount :: AccountId -> Account -> ApiAccount
 toApiAccount pid p = ApiAccount {apiAccountId = pid, apiAccountName = accountName p, apiAccountAge = accountAge p, apiAccountType = accountType p}
@@ -43,7 +48,7 @@ data ApiItem = ApiItem
   , apiItemDeadline :: ZonedTime
   , apiItemAccountId :: AccountId
   } deriving (Generic, Show)
-deriveToJSON defaultOptions {fieldLabelModifier = drop 7} ''ApiItem
+deriveToJSON Json.defaultOptions {fieldLabelModifier = drop 7} ''ApiItem
 
 toApiItem :: ItemId -> Item -> ApiItem
 toApiItem iid i = ApiItem
@@ -110,3 +115,79 @@ instance FromJSON ApiItemReqBody where
 --   } deriving (Generic, Show)
 
 -- deriveFromJSON defaultOptions {fieldLabelModifier = snakeKey 12} ''ApiBlogPostReqBody
+
+
+-------------------------
+-- API export for Elm  --
+-------------------------
+
+myAlteration :: ETypeDef -> ETypeDef
+myAlteration =
+  recAlterType $ \t -> case t of
+    ETyApp (ETyCon (ETCon "Key")) _ ->
+      ETyCon (ETCon "Int")
+    ETyCon (ETCon "Day") ->
+      ETyCon (ETCon "Date")
+    ETyCon (ETCon "Int64") ->
+      ETyCon (ETCon "Int")
+    _ ->
+      defaultTypeAlterations t
+
+
+elmApiExport :: String
+elmApiExport =
+  makeElmModule "ApiTypes" [] ++
+  "import Time exposing(Posix)" ++ "\n" ++
+  "import Date exposing(Date)" ++ "\n" ++
+  "import MyApiDecoder exposing(..)" ++ "\n" ++
+  "\n\n" ++
+  makeModuleContentWithAlterations myAlteration
+  [          -- [type] data types
+              -- DefineElm    (Proxy :: Proxy AccountType)
+            -- , DefineElm    (Proxy :: Proxy SectionType)
+            -- , DefineElm    (Proxy :: Proxy LoggerStatus)
+            -- , DefineElm    (Proxy :: Proxy ParameterType)
+            -- , DefineElm    (Proxy :: Proxy EventType)
+            -- , DefineElm    (Proxy :: Proxy AverageCalcMode)
+            -- , DefineElm    (Proxy :: Proxy BatteryUpdateType)
+            -- , DefineElm    (Proxy :: Proxy TaskStatus)
+            -- , DefineElm    (Proxy :: Proxy ExcelSheet)
+            -- , DefineElm    (Proxy :: Proxy NotificationType)
+            -- , DefineElm    (Proxy :: Proxy NotificationExecType)
+            -- , DefineElm    (Proxy :: Proxy MaintenanceType)
+            -- , DefineElm    (Proxy :: Proxy LeakageType)
+            -- , DefineElm    (Proxy :: Proxy LeakageDetectionType)
+            -- , DefineElm    (Proxy :: Proxy LeakageRoadType)
+            -- , DefineElm    (Proxy :: Proxy LeakageSurfaceType)
+            -- , DefineElm    (Proxy :: Proxy LeakageSituationType)
+            -- , DefineElm    (Proxy :: Proxy FileType)
+            -- , DefineElm    (Proxy :: Proxy JudgementMethod)
+            -- , DefineElm    (Proxy :: Proxy ServicePlanType)
+
+            -- [type] ID
+            DefineElm    (Proxy :: Proxy AccountId)
+            , DefineElm    (Proxy :: Proxy ApiAccount)
+            -- , DefineElm    (Proxy :: Proxy LoggerId)
+            -- , DefineElm    (Proxy :: Proxy LoggerHistoryId)
+            -- , DefineElm    (Proxy :: Proxy SectionId)
+            -- , DefineElm    (Proxy :: Proxy ProjectId)
+            -- , DefineElm    (Proxy :: Proxy LocationId)
+            -- , DefineElm    (Proxy :: Proxy Catm1ReportDataId)
+            -- , DefineElm    (Proxy :: Proxy Catm1SensorDataId)
+            -- , DefineElm    (Proxy :: Proxy Catm1ReportResultId)
+            -- , DefineElm    (Proxy :: Proxy DevParameterId)
+            -- , DefineElm    (Proxy :: Proxy AppParameterId)
+            -- , DefineElm    (Proxy :: Proxy JdgParameterId)
+            -- , DefineElm    (Proxy :: Proxy MtmParameterId)
+            -- , DefineElm    (Proxy :: Proxy AttachmentId)
+            -- , DefineElm    (Proxy :: Proxy MaintenanceId)
+            -- , DefineElm    (Proxy :: Proxy AnnounceId)
+            -- , DefineElm    (Proxy :: Proxy LineGroupId)
+            -- , DefineElm    (Proxy :: Proxy LineEventId)
+            -- , DefineElm    (Proxy :: Proxy CommModuleId)
+            -- , DefineElm    (Proxy :: Proxy CommModuleBatteryId)
+
+            -- , DefineElm    (Proxy :: Proxy LncDecisionCommand)
+            -- , DefineElm    (Proxy :: Proxy LncDecisionSerialNo)
+            -- , DefineElm    (Proxy :: Proxy LncDecisionTimestamp)
+  ]
