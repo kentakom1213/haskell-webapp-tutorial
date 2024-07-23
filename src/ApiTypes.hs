@@ -104,15 +104,17 @@ data ApiItemReqBody = ApiItemReqBody
   , apiItemReqBodyAccountId :: Maybe AccountId
   } deriving (Generic, Show)
 
-instance FromJSON ApiItemReqBody where
-  parseJSON = withObject
-    "apiitemreqbody"
-    (\o -> do
-       apiItemReqBodyTitle <- o .:? "title"
-       apiItemReqBodyDescription <- o .:? "description"
-       apiItemReqBodyDeadline <- o .:? "deadline"
-       apiItemReqBodyAccountId <- o .:? "account_id"
-       return ApiItemReqBody {..})
+$(deriveJsonNoTypeNamePrefix' ''ApiItemReqBody)
+
+-- instance FromJSON ApiItemReqBody where
+--   parseJSON = withObject
+--     "apiitemreqbody"
+--     (\o -> do
+--        apiItemReqBodyTitle <- o .:? "title"
+--        apiItemReqBodyDescription <- o .:? "description"
+--        apiItemReqBodyDeadline <- o .:? "deadline"
+--        apiItemReqBodyAccountId <- o .:? "account_id"
+--        return ApiItemReqBody {..})
 
 -- data ApiBlogPostReqBody = ApiBlogPostReqBody
 --   { apiBlogPostReqBodyTitle :: Maybe Text
@@ -174,6 +176,7 @@ elmApiExport =
             , DefineElm    (Proxy :: Proxy ApiAccount)
             , DefineElm    (Proxy :: Proxy AccountType)
             , DefineElm    (Proxy :: Proxy ApiItem)
+            , DefineElm    (Proxy :: Proxy ApiItemReqBody)
             , DefineElm    (Proxy :: Proxy ItemId)
             -- , DefineElm    (Proxy :: Proxy LoggerId)
             -- , DefineElm    (Proxy :: Proxy LoggerHistoryId)

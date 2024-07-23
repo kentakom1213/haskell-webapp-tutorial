@@ -66,19 +66,32 @@ getItem' iid = do
 
   return $ toApiItem iid i
 
-postItem :: ApiItemReqBody -> MyAppHandler ApiItem
+getItemList' :: SqlPersistM' [ApiItem]
+getItemList' = do
+  ilist <- select $ from $ \i -> do
+    return i
+
+  return $ toApiItemFE <$> ilist
+
+
+postItem :: ApiItemReqBody -> MyAppHandler [ApiItem]
 postItem ApiItemReqBody
-    { apiItemReqBodyTitle = Just title
+    { apiItemReqBodyTitle = m_title
     , apiItemReqBodyDescription = Just description
     , apiItemReqBodyDeadline = Just deadline
     , apiItemReqBodyAccountId = Just pid
     } = errorHandler $ runSql $ do
-  getItem' =<< insert Item
+  -- title <- maybe (throwM err400 {errBody = "Invalid request body"}) return m_title
+  title <- case m_title of
+    Just t -> return t
+    Nothing -> throwM err400 {errBody = "Invalid request body"}
+  insert_ Item
     { itemTitle = title
     , itemDescription = description
     , itemDeadline = deadline
     , itemAccountId = pid
     }
+  getItemList'
 
 postItem _ = throwM err400 {errBody = "Invalid request body"}
 

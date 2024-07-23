@@ -75,6 +75,7 @@ main = do
 
   -- elm対応のためのコード
   -- writeFile "../elm-vite/src/ApiTypes.elm" elmApiExport
+  putStrLn $ elmApiExport
 
   print $ "logger " ++ show (commandLineOptionsLogging opts)
   run port $ logger $ myAppApp cfg
@@ -103,7 +104,7 @@ type MyAppAPI' = "account" :> Capture "account_id" AccountId :> Get '[JSON] ApiA
             :<|> "account" :> ReqBody '[JSON] ApiAccountReqBody :> Post '[JSON] ApiAccount
             :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
             :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
-            :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] ApiItem
+            :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] [ApiItem]
             :<|> "items" :> Get '[JSON] [ApiItem]
             :<|> "app_text" :> Get '[JSON] T.Text
 
