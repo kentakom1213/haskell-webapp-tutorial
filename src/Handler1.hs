@@ -76,7 +76,7 @@ postItem ApiItemReqBody
   getItem' =<< insert Item
     { itemTitle = title
     , itemDescription = description
-    , itemDeadline = fromLocalTime deadline
+    , itemDeadline = deadline
     , itemAccountId = pid
     }
 

@@ -10,7 +10,7 @@ import           Data.Aeson.TH (deriveFromJSON, deriveToJSON)
 import           Data.Aeson as Json
 import           Data.HashMap.Strict as HM (lookup)
 import           Data.Text as T (Text)
-import           Data.Time (ZonedTime)
+import           Data.Time (UTCTime)
 import           Database.Esqueleto (Entity(Entity))
 import           GHC.Generics (Generic)
 import           Data.Proxy (Proxy (..))
@@ -21,6 +21,7 @@ import           Elm.Derive
 import Types
 import Model
 import Utils
+import DeriveJsonNoTypePrefixElmBridge
 
 -----------------------------------------
 -- API type defintion for API response --
@@ -32,8 +33,11 @@ data ApiAccount = ApiAccount
   , apiAccountAge :: Maybe Int
   , apiAccountType :: AccountType
   } deriving (Generic, Show)
-deriveToJSON Json.defaultOptions {fieldLabelModifier = drop 10} ''ApiAccount
-deriveElmDef Json.defaultOptions {fieldLabelModifier = drop 10} ''ApiAccount
+-- deriveToJSON Json.defaultOptions {fieldLabelModifier = drop 10} ''ApiAccount
+-- deriveElmDef Json.defaultOptions {fieldLabelModifier = drop 10} ''ApiAccount
+
+$(deriveJsonNoTypeNamePrefix' ''ApiAccount)
+
 
 toApiAccount :: AccountId -> Account -> ApiAccount
 toApiAccount pid p = ApiAccount {apiAccountId = pid, apiAccountName = accountName p, apiAccountAge = accountAge p, apiAccountType = accountType p}
@@ -45,17 +49,19 @@ data ApiItem = ApiItem
   { apiItemId :: ItemId
   , apiItemTitle :: Text
   , apiItemDescription :: Text
-  , apiItemDeadline :: ZonedTime
+  , apiItemDeadline :: UTCTime
   , apiItemAccountId :: AccountId
   } deriving (Generic, Show)
-deriveToJSON Json.defaultOptions {fieldLabelModifier = drop 7} ''ApiItem
+-- deriveToJSON Json.defaultOptions {fieldLabelModifier = drop 7} ''ApiItem
+
+$(deriveJsonNoTypeNamePrefix' ''ApiItem)
 
 toApiItem :: ItemId -> Item -> ApiItem
 toApiItem iid i = ApiItem
   { apiItemId = iid
   , apiItemTitle = itemTitle i
   , apiItemDescription = itemDescription i
-  , apiItemDeadline = toLocalTime (itemDeadline i)
+  , apiItemDeadline = itemDeadline i
   , apiItemAccountId = itemAccountId i
   }
 
@@ -66,7 +72,7 @@ toApiItemFE (Entity iid i) = toApiItem iid i
 --   { apiBlogPostId :: BlogPostId
 --   , apiBlogPostTitle :: Text
 --   , apiBlogPostAuthorId :: AccountId
---   , apiBlogPostTimestamp :: ZonedTime
+--   , apiBlogPostTimestamp :: UTCTime
 --   } deriving (Generic, Show)
 
 -- deriveToJSON defaultOptions {fieldLabelModifier = snakeKey 11} ''ApiBlogPost
@@ -94,7 +100,7 @@ instance FromJSON ApiAccountReqBody where
 data ApiItemReqBody = ApiItemReqBody
   { apiItemReqBodyTitle :: Maybe Text
   , apiItemReqBodyDescription :: Maybe Text
-  , apiItemReqBodyDeadline :: Maybe ZonedTime
+  , apiItemReqBodyDeadline :: Maybe UTCTime
   , apiItemReqBodyAccountId :: Maybe AccountId
   } deriving (Generic, Show)
 
@@ -111,11 +117,10 @@ instance FromJSON ApiItemReqBody where
 -- data ApiBlogPostReqBody = ApiBlogPostReqBody
 --   { apiBlogPostReqBodyTitle :: Maybe Text
 --   , apiBlogPostReqBodyAuthorInd :: Maybe AccountId
---   , apiBlogPostReqBodyTimestamp :: Maybe ZonedTime
+--   , apiBlogPostReqBodyTimestamp :: Maybe UTCTime
 --   } deriving (Generic, Show)
 
 -- deriveFromJSON defaultOptions {fieldLabelModifier = snakeKey 12} ''ApiBlogPostReqBody
-
 
 -------------------------
 -- API export for Elm  --
@@ -138,7 +143,7 @@ elmApiExport :: String
 elmApiExport =
   makeElmModule "ApiTypes" [] ++
   "import Time exposing(Posix)" ++ "\n" ++
-  "import Date exposing(Date)" ++ "\n" ++
+  -- "import Date exposing(Date)" ++ "\n" ++
   "import MyApiDecoder exposing(..)" ++ "\n" ++
   "\n\n" ++
   makeModuleContentWithAlterations myAlteration
@@ -167,6 +172,9 @@ elmApiExport =
             -- [type] ID
             DefineElm    (Proxy :: Proxy AccountId)
             , DefineElm    (Proxy :: Proxy ApiAccount)
+            , DefineElm    (Proxy :: Proxy AccountType)
+            , DefineElm    (Proxy :: Proxy ApiItem)
+            , DefineElm    (Proxy :: Proxy ItemId)
             -- , DefineElm    (Proxy :: Proxy LoggerId)
             -- , DefineElm    (Proxy :: Proxy LoggerHistoryId)
             -- , DefineElm    (Proxy :: Proxy SectionId)

@@ -45,6 +45,7 @@ dependencies:
 - wai-extra
 - warp
 - elm-bridge
+- template-haskell
 
 ghc-options:
 - -Wall

@@ -27,6 +27,7 @@ library
   exposed-modules:
       ApiTypes
       DBSetting
+      DeriveJsonNoTypePrefixElmBridge
       Handler1
       Main
       Model
@@ -59,6 +60,7 @@ library
     , safe-exceptions
     , servant
     , servant-server
+    , template-haskell
     , text
     , time
     , unordered-containers
@@ -72,6 +74,7 @@ executable servant-esqueleto-sample
   other-modules:
       ApiTypes
       DBSetting
+      DeriveJsonNoTypePrefixElmBridge
       Handler1
       Model
       Types
@@ -103,6 +106,7 @@ executable servant-esqueleto-sample
     , servant
     , servant-esqueleto-sample
     , servant-server
+    , template-haskell
     , text
     , time
     , unordered-containers

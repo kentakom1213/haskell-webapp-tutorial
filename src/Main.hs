@@ -72,7 +72,10 @@ main = do
 
   -- Run Application with Config
   print $ "running port: " ++ show port
-  putStrLn $ elmApiExport
+
+  -- elm対応のためのコード
+  -- writeFile "../elm-vite/src/ApiTypes.elm" elmApiExport
+
   print $ "logger " ++ show (commandLineOptionsLogging opts)
   run port $ logger $ myAppApp cfg
 
