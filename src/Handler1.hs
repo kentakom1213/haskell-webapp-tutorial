@@ -95,6 +95,13 @@ postItem ApiItemReqBody
 
 postItem _ = throwM err400 {errBody = "Invalid request body"}
 
+
+deleteItem :: ItemId -> MyAppHandler [ApiItem]
+deleteItem iid = errorHandler $ runSql $ do
+  delete $ from $ \i -> do
+    where_ (i ^. ItemId ==. val iid)
+  getItemList'
+
 -- App text
 printAppText :: MyAppHandler T.Text
 printAppText = do
