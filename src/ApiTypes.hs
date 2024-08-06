@@ -56,8 +56,8 @@ data ApiItem = ApiItem
 
 $(deriveJsonNoTypeNamePrefix' ''ApiItem)
 
-toApiItem :: ItemId -> Item -> ApiItem
-toApiItem iid i = ApiItem
+toApiItemFE :: Entity Item -> ApiItem
+toApiItemFE (Entity iid i) = ApiItem
   { apiItemId = iid
   , apiItemTitle = itemTitle i
   , apiItemDescription = itemDescription i
@@ -65,20 +65,20 @@ toApiItem iid i = ApiItem
   , apiItemAccountId = itemAccountId i
   }
 
-toApiItemFE :: Entity Item -> ApiItem
-toApiItemFE (Entity iid i) = toApiItem iid i
 
--- data ApiBlogPost = ApiBlogPost
---   { apiBlogPostId :: BlogPostId
---   , apiBlogPostTitle :: Text
---   , apiBlogPostAuthorId :: AccountId
---   , apiBlogPostTimestamp :: UTCTime
---   } deriving (Generic, Show)
+data ApiTag = ApiTag
+  { apiTagId :: TagId
+  , apiTagName :: Text
+  } deriving (Generic, Show)
 
--- deriveToJSON defaultOptions {fieldLabelModifier = snakeKey 11} ''ApiBlogPost
+$(deriveJsonNoTypeNamePrefix' ''ApiTag)
 
--- toApiBlogPost :: BlogPostId -> BlogPost -> ApiBlogPost
--- toApiBlogPost bpid bp = ApiBlogPost {apiBlogPostId = bpid, apiBlogPostTitle = blogPostTitle bp, apiBlogPostAuthorId = blogPostAuthorId bp, apiBlogPostTimestamp = toLocalTime . blogPostTimestamp $ bp}
+toApiTagFE :: Entity Tag -> ApiTag
+toApiTagFE (Entity tid t) = ApiTag
+  { apiTagId = tid
+  , apiTagName = tagName t
+  }
+
 
 ----------------------------------------
 -- API type defintion for API request --
@@ -176,8 +176,10 @@ elmApiExport =
             , DefineElm    (Proxy :: Proxy ApiAccount)
             , DefineElm    (Proxy :: Proxy AccountType)
             , DefineElm    (Proxy :: Proxy ApiItem)
+            , DefineElm    (Proxy :: Proxy ApiTag)
             , DefineElm    (Proxy :: Proxy ApiItemReqBody)
             , DefineElm    (Proxy :: Proxy ItemId)
+            , DefineElm    (Proxy :: Proxy TagId)
             -- , DefineElm    (Proxy :: Proxy LoggerId)
             -- , DefineElm    (Proxy :: Proxy LoggerHistoryId)
             -- , DefineElm    (Proxy :: Proxy SectionId)

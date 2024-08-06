@@ -36,7 +36,20 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     accountId AccountId
 
     deriving Show
+
+  Tag
+    name Text
+    deletedAt UTCTime Maybe
+
+    deriving Show
+  
+  TagItem
+    tagId TagId
+    itemId ItemId
+
+    deriving Show
 |]
 
 deriveElmDef defaultOptions ''AccountId
 deriveElmDef defaultOptions ''ItemId
+deriveElmDef defaultOptions ''TagId

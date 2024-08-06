@@ -64,7 +64,7 @@ getItem' :: ItemId -> SqlPersistM' ApiItem
 getItem' iid = do
   i <- fromJustWithError (err404, "No such item ID") =<< get iid
 
-  return $ toApiItem iid i
+  return $ toApiItemFE (Entity iid i)
 
 getItemList' :: SqlPersistM' [ApiItem]
 getItemList' = do
@@ -109,3 +109,16 @@ printAppText = do
   errorHandler $ runSql $ do
     logInfo' "API app text called"
     return app_text
+
+
+-- タグの追加
+postTag :: Text -> MyAppHandler [ApiTag]
+postTag tag = errorHandler $ runSql $ do
+  insert_ Tag
+    { tagName = tag
+    , tagDeletedAt = Nothing
+    }
+  tlist <- select $ from $ \t -> do
+    return t
+
+  return $ toApiTagFE <$> tlist

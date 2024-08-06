@@ -108,9 +108,10 @@ type MyAppAPI' = "account" :> Capture "account_id" AccountId :> Get '[JSON] ApiA
             :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
             :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
             :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] [ApiItem]
-            :<|> "item" :> Capture "itemId" ItemId :> "delete" :> Get '[JSON] [ApiItem]
+            :<|> "item" :> Capture "itemId" ItemId :> "delete" :> Delete '[JSON] [ApiItem]
             :<|> "items" :> Get '[JSON] [ApiItem]
             :<|> "app_text" :> Get '[JSON] T.Text
+            :<|> "tag" :> ReqBody '[JSON] Text :> Post '[JSON] [ApiTag]
 
 -- add "/api" prefix
 type MyAppAPI = "api" :> MyAppAPI'
@@ -124,6 +125,7 @@ myAppServer = getAccount
          :<|> deleteItem
          :<|> getItemList
          :<|> printAppText
+         :<|> postTag
 
 -----------------------------
 -- Command line processing --
