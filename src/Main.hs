@@ -53,16 +53,21 @@ main = do
     LoggingStdout -> return (Just runStdoutLoggingT, logStdout)
     LoggingNone -> return (Nothing, id)
 
+  -- configの読み込み
+  dbConfig <- loadConfig "database.yml"
+
+  print $ dbConfig
+
   -- DB connection setting
-  let connect_info = case commandLineOptionsDBConnection opts of
-        DBConn1 -> connectInfo1
-        DBConn2 -> connectInfo2
+  let connectInfo = case commandLineOptionsDBConnection opts of
+        DBConn1 -> toConnectInfo $ DBSetting.db_conf_1 dbConfig
+        DBConn2 -> toConnectInfo $ DBSetting.db_conf_2 dbConfig
 
   -- pool size setting and make pool
   let pool_size = commandLineOptionsPoolSize opts
   pool <- case m_loggingT of
-    Just loggingT -> loggingT $ createMySQLPool connect_info pool_size
-    Nothing       -> runNoLoggingT $ createMySQLPool connect_info pool_size
+    Just loggingT -> loggingT $ createMySQLPool connectInfo pool_size
+    Nothing       -> runNoLoggingT $ createMySQLPool connectInfo pool_size
 
   -- 'readerT Config' setting
   let cfg = MyAppConfig {getPool = pool, getApplicationText = T.pack . commandLineOptionsApplicationText $ opts, getApplicationFlag = commandLineOptionsApplicationFlag opts}

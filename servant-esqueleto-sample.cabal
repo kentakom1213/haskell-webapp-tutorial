@@ -67,6 +67,7 @@ library
     , wai
     , wai-extra
     , warp
+    , yaml
   default-language: Haskell2010
 
 executable servant-esqueleto-sample
@@ -113,4 +114,5 @@ executable servant-esqueleto-sample
     , wai
     , wai-extra
     , warp
+    , yaml
   default-language: Haskell2010

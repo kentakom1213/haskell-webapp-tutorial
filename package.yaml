@@ -46,6 +46,7 @@ dependencies:
 - warp
 - elm-bridge
 - template-haskell
+- yaml
 
 ghc-options:
 - -Wall
