@@ -56,8 +56,6 @@ main = do
   -- configの読み込み
   dbConfig <- loadConfig "database.yml"
 
-  print $ dbConfig
-
   -- DB connection setting
   let connectInfo = case commandLineOptionsDBConnection opts of
         DBConn1 -> toConnectInfo $ DBSetting.db_conf_1 dbConfig
@@ -79,8 +77,8 @@ main = do
   print $ "running port: " ++ show port
 
   -- elm対応のためのコード
-  -- writeFile "../elm-vite/src/ApiTypes.elm" elmApiExport
-  putStrLn $ elmApiExport
+  writeFile "../elm-vite/src/ApiTypes.elm" elmApiExport
+  -- putStrLn $ elmApiExport
 
   print $ "logger " ++ show (commandLineOptionsLogging opts)
   run port $ logger $ myAppApp cfg

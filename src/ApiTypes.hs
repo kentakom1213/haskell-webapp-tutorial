@@ -146,7 +146,7 @@ elmApiExport =
   makeElmModule "ApiTypes" [] ++
   "import Time exposing(Posix)" ++ "\n" ++
   -- "import Date exposing(Date)" ++ "\n" ++
-  "import MyApiDecoder exposing(..)" ++ "\n" ++
+  "import ApiUtil exposing (jsonDecPosix, jsonEncPosix)" ++ "\n" ++
   "\n\n" ++
   makeModuleContentWithAlterations myAlteration
   [          -- [type] data types
