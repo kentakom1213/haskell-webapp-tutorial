@@ -1,35 +1,41 @@
-{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE TypeOperators #-}
 
 module Main where
 
-import           Control.Monad                        (unless)
-import           Control.Monad.Logger                 (logInfoNS, runNoLoggingT,
-                                                       runStdoutLoggingT)
-import           Control.Monad.Reader                 (ReaderT, runReaderT)
-import           Control.Monad.Trans.Resource         (runResourceT)
-import           Data.Text                            as T (Text, pack)
-import           Database.Persist.MySQL               (ConnectionPool,
-                                                       createMySQLPool,
-                                                       runMigration, runSqlPool)
-import           Network.Wai.Handler.Warp             (run)
-import           Network.Wai.Middleware.RequestLogger (Destination (Callback),
-                                                       OutputFormat (Detailed),
-                                                       RequestLoggerSettings (..),
-                                                       logStdout,
-                                                       mkRequestLogger)
-import           Options.Applicative
-import           Servant                              as Sv
-import           System.Log.FastLogger                (fromLogStr)
-
-import           ApiTypes
-import           DBSetting
-import           Model
-import           Types
-import           Utils
-
-import           Handler1
+import ApiTypes
+import Control.Monad (unless)
+import Control.Monad.Logger
+  ( logInfoNS,
+    runNoLoggingT,
+    runStdoutLoggingT,
+  )
+import Control.Monad.Reader (ReaderT, runReaderT)
+import Control.Monad.Trans.Resource (runResourceT)
+import DBSetting
+import Data.Text as T (Text, pack)
+import Database.Persist.MySQL
+  ( ConnectionPool,
+    createMySQLPool,
+    runMigration,
+    runSqlPool,
+  )
+import Handler1
+import Model
+import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.RequestLogger
+  ( Destination (Callback),
+    OutputFormat (Detailed),
+    RequestLoggerSettings (..),
+    logStdout,
+    mkRequestLogger,
+  )
+import Options.Applicative
+import Servant as Sv
+import System.Log.FastLogger (fromLogStr)
+import Types
+import Utils
 
 ------------------------
 -- Running API Server --
@@ -65,7 +71,7 @@ main = do
   let pool_size = commandLineOptionsPoolSize opts
   pool <- case m_loggingT of
     Just loggingT -> loggingT $ createMySQLPool connectInfo pool_size
-    Nothing       -> runNoLoggingT $ createMySQLPool connectInfo pool_size
+    Nothing -> runNoLoggingT $ createMySQLPool connectInfo pool_size
 
   -- 'readerT Config' setting
   let cfg = MyAppConfig {getPool = pool, getApplicationText = T.pack . commandLineOptionsApplicationText $ opts, getApplicationFlag = commandLineOptionsApplicationFlag opts}
@@ -103,29 +109,31 @@ nt s x = runReaderT x s
 -- API Handler registration --
 ------------------------------
 
-type MyAppAPI' = "account" :> Capture "account_id" AccountId :> Get '[JSON] ApiAccount
-            :<|> "account" :> ReqBody '[JSON] ApiAccountReqBody :> Post '[JSON] ApiAccount
-            :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
-            :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
-            :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] [ApiItem]
-            :<|> "item" :> Capture "itemId" ItemId :> "delete" :> Delete '[JSON] [ApiItem]
-            :<|> "items" :> Get '[JSON] [ApiItem]
-            :<|> "app_text" :> Get '[JSON] T.Text
-            :<|> "tag" :> ReqBody '[JSON] Text :> Post '[JSON] [ApiTag]
+type MyAppAPI' =
+  "account" :> Capture "account_id" AccountId :> Get '[JSON] ApiAccount
+    :<|> "account" :> ReqBody '[JSON] ApiAccountReqBody :> Post '[JSON] ApiAccount
+    :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
+    :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
+    :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] [ApiItem]
+    :<|> "item" :> Capture "itemId" ItemId :> "delete" :> Delete '[JSON] [ApiItem]
+    :<|> "items" :> Get '[JSON] [ApiItem]
+    :<|> "app_text" :> Get '[JSON] T.Text
+    :<|> "tag" :> ReqBody '[JSON] Text :> Post '[JSON] [ApiTag]
 
 -- add "/api" prefix
 type MyAppAPI = "api" :> MyAppAPI'
 
 myAppServer :: ServerT MyAppAPI MyAppHandler
-myAppServer = getAccount
-         :<|> postAccount
-         :<|> getAccountItems
-         :<|> getAccountList
-         :<|> postItem
-         :<|> deleteItem
-         :<|> getItemList
-         :<|> printAppText
-         :<|> postTag
+myAppServer =
+  getAccount
+    :<|> postAccount
+    :<|> getAccountItems
+    :<|> getAccountList
+    :<|> postItem
+    :<|> deleteItem
+    :<|> getItemList
+    :<|> printAppText
+    :<|> postTag
 
 -----------------------------
 -- Command line processing --
@@ -138,49 +146,68 @@ data DBConnectionOption = DBConn1 | DBConn2
   deriving (Read, Show)
 
 data CommandLineOptions = CommandLineOptions
-  { commandLineOptionsPort            :: Int
-  , commandLineOptionsPoolSize        :: Int
-  , commandLineOptionsDBConnection    :: DBConnectionOption
-  , commandLineOptionsLogging         :: LoggingOption
-  , commandLineOptionsNoMigration     :: Bool
-  , commandLineOptionsApplicationText :: String
-  , commandLineOptionsApplicationFlag :: Bool
+  { commandLineOptionsPort :: Int,
+    commandLineOptionsPoolSize :: Int,
+    commandLineOptionsDBConnection :: DBConnectionOption,
+    commandLineOptionsLogging :: LoggingOption,
+    commandLineOptionsNoMigration :: Bool,
+    commandLineOptionsApplicationText :: String,
+    commandLineOptionsApplicationFlag :: Bool
   }
 
 commandLineParser :: Parser CommandLineOptions
-commandLineParser = CommandLineOptions
-     <$> option auto
-         ( long "port" <> short 'p'
-        <> help "Server port number"
-        <> showDefault
-        <> value 3000
-        <> metavar "<Num>" )
-     <*> option auto
-         ( long "pool_size" <> short 'u'
-        <> help "Connection pool size for DB connection"
-        <> showDefault
-        <> value 8
-        <> metavar "<Num>" )
-     <*> option auto
-         ( long "dbconn" <> short 'd'
-        <> help "DB connection target"
-        <> showDefault
-        <> value DBConn1
-        <> metavar "DBConn1/DBConn2" )
-     <*> option auto
-         ( long "logging" <> short 'l'
-        <> help "Logging options"
-        <> showDefault
-        <> value LoggingSyslog
-        <> metavar "LoggingSyslog/LoggingStdout/LoggingNone)" )
-     <*> switch
-         ( long "no_migration" <> short 'm'
-        <> help "Don't do migration" )
-     <*> strOption
-         ( long "application_text" <> short 'a'
-        <> metavar "String"
-        <> value "Default application text"
-        <> help "Application string used inside handler" )
-     <*> switch
-         ( long "appliaction_flag" <> short 'A'
-        <> help "Application flag used inside handler" )
+commandLineParser =
+  CommandLineOptions
+    <$> option
+      auto
+      ( long "port"
+          <> short 'p'
+          <> help "Server port number"
+          <> showDefault
+          <> value 3000
+          <> metavar "<Num>"
+      )
+    <*> option
+      auto
+      ( long "pool_size"
+          <> short 'u'
+          <> help "Connection pool size for DB connection"
+          <> showDefault
+          <> value 8
+          <> metavar "<Num>"
+      )
+    <*> option
+      auto
+      ( long "dbconn"
+          <> short 'd'
+          <> help "DB connection target"
+          <> showDefault
+          <> value DBConn1
+          <> metavar "DBConn1/DBConn2"
+      )
+    <*> option
+      auto
+      ( long "logging"
+          <> short 'l'
+          <> help "Logging options"
+          <> showDefault
+          <> value LoggingSyslog
+          <> metavar "LoggingSyslog/LoggingStdout/LoggingNone)"
+      )
+    <*> switch
+      ( long "no_migration"
+          <> short 'm'
+          <> help "Don't do migration"
+      )
+    <*> strOption
+      ( long "application_text"
+          <> short 'a'
+          <> metavar "String"
+          <> value "Default application text"
+          <> help "Application string used inside handler"
+      )
+    <*> switch
+      ( long "appliaction_flag"
+          <> short 'A'
+          <> help "Application flag used inside handler"
+      )

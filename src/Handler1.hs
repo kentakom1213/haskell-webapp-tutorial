@@ -2,16 +2,15 @@
 
 module Handler1 where
 
-import           Control.Exception.Safe (throwM)
-import           Control.Monad.Reader   (asks)
-import           Data.Text              as T (Text)
-import           Database.Esqueleto
-import           Servant
-
-import           ApiTypes
-import           Model
-import           Types
-import           Utils
+import ApiTypes
+import Control.Exception.Safe (throwM)
+import Control.Monad.Reader (asks)
+import Data.Text as T (Text)
+import Database.Esqueleto
+import Model
+import Servant
+import Types
+import Utils
 
 getAccountList :: Maybe AccountType -> MyAppHandler [ApiAccount]
 getAccountList maybe_ptype = errorHandler $ runSql $ do
@@ -31,17 +30,19 @@ getAccount' pid = do
   return $ toApiAccount pid p
 
 postAccount :: ApiAccountReqBody -> MyAppHandler ApiAccount
-postAccount ApiAccountReqBody
-    { apiAccountReqBodyName = Just name
-    , apiAccountReqBodyAge = Just age
-    , apiAccountReqBodyType = Just ptype
+postAccount
+  ApiAccountReqBody
+    { apiAccountReqBodyName = Just name,
+      apiAccountReqBodyAge = Just age,
+      apiAccountReqBodyType = Just ptype
     } = errorHandler $ runSql $ do
-  getAccount' =<< insert Account
-    { accountName = name
-    , accountAge = age
-    , accountType = ptype
-    }
-
+    getAccount'
+      =<< insert
+        Account
+          { accountName = name,
+            accountAge = age,
+            accountType = ptype
+          }
 postAccount _ = throwM err400 {errBody = "Invalid request body"}
 
 getAccountItems :: AccountId -> MyAppHandler [ApiItem]
@@ -73,28 +74,27 @@ getItemList' = do
 
   return $ toApiItemFE <$> ilist
 
-
 postItem :: ApiItemReqBody -> MyAppHandler [ApiItem]
-postItem ApiItemReqBody
-    { apiItemReqBodyTitle = m_title
-    , apiItemReqBodyDescription = Just description
-    , apiItemReqBodyDeadline = Just deadline
-    , apiItemReqBodyAccountId = Just pid
+postItem
+  ApiItemReqBody
+    { apiItemReqBodyTitle = m_title,
+      apiItemReqBodyDescription = Just description,
+      apiItemReqBodyDeadline = Just deadline,
+      apiItemReqBodyAccountId = Just pid
     } = errorHandler $ runSql $ do
-  -- title <- maybe (throwM err400 {errBody = "Invalid request body"}) return m_title
-  title <- case m_title of
-    Just t -> return t
-    Nothing -> throwM err400 {errBody = "Invalid request body"}
-  insert_ Item
-    { itemTitle = title
-    , itemDescription = description
-    , itemDeadline = deadline
-    , itemAccountId = pid
-    }
-  getItemList'
-
+    -- title <- maybe (throwM err400 {errBody = "Invalid request body"}) return m_title
+    title <- case m_title of
+      Just t -> return t
+      Nothing -> throwM err400 {errBody = "Invalid request body"}
+    insert_
+      Item
+        { itemTitle = title,
+          itemDescription = description,
+          itemDeadline = deadline,
+          itemAccountId = pid
+        }
+    getItemList'
 postItem _ = throwM err400 {errBody = "Invalid request body"}
-
 
 deleteItem :: ItemId -> MyAppHandler [ApiItem]
 deleteItem iid = errorHandler $ runSql $ do
@@ -110,14 +110,14 @@ printAppText = do
     logInfo' "API app text called"
     return app_text
 
-
 -- タグの追加
 postTag :: Text -> MyAppHandler [ApiTag]
 postTag tag = errorHandler $ runSql $ do
-  insert_ Tag
-    { tagName = tag
-    , tagDeletedAt = Nothing
-    }
+  insert_
+    Tag
+      { tagName = tag,
+        tagDeletedAt = Nothing
+      }
   tlist <- select $ from $ \t -> do
     return t
 
