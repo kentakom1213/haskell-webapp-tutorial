@@ -106,7 +106,7 @@ data ApiItemReqBody = ApiItemReqBody
     apiItemReqBodyDescription :: Maybe Text,
     apiItemReqBodyDeadline :: Maybe UTCTime,
     apiItemReqBodyAccountId :: Maybe AccountId,
-    apiItemReqBodyParentId :: Maybe (Maybe ItemId)
+    apiItemReqBodyParentId :: Maybe ItemId
   }
   deriving (Generic, Show)
 

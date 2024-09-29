@@ -7,6 +7,7 @@ import Control.Exception.Safe (throwM)
 import Control.Monad.Reader (asks)
 import Data.Text as T (Text)
 import Database.Esqueleto
+import Debug.Trace
 import Model
 import Servant
 import Types
@@ -81,9 +82,8 @@ postItem
       apiItemReqBodyDescription = Just description,
       apiItemReqBodyDeadline = Just deadline,
       apiItemReqBodyAccountId = Just pid,
-      apiItemReqBodyParentId = Just parent_id
+      apiItemReqBodyParentId = parent_id
     } = errorHandler $ runSql $ do
-    -- title <- maybe (throwM err400 {errBody = "Invalid request body"}) return m_title
     title <- case m_title of
       Just t -> return t
       Nothing -> throwM err400 {errBody = "Invalid request body"}
@@ -107,7 +107,7 @@ postItem
           itemParentId = valid_parent_id
         }
     getItemList'
-postItem _ = throwM err400 {errBody = "Invalid request body"}
+postItem ng = trace ("Invalid Value: " ++ show ng) throwM err400 {errBody = "Invalid request body"}
 
 deleteItem :: ItemId -> MyAppHandler [ApiItem]
 deleteItem iid = errorHandler $ runSql $ do

@@ -115,7 +115,7 @@ type MyAppAPI' =
     :<|> "account" :> Capture "accountId" AccountId :> "items" :> Get '[JSON] [ApiItem]
     :<|> "accounts" :> QueryParam "type" AccountType :> Get '[JSON] [ApiAccount]
     :<|> "item" :> ReqBody '[JSON] ApiItemReqBody :> Post '[JSON] [ApiItem]
-    :<|> "item" :> Capture "itemId" ItemId :> "delete" :> Delete '[JSON] [ApiItem]
+    :<|> "item" :> Capture "itemId" ItemId :> Delete '[JSON] [ApiItem]
     :<|> "items" :> Get '[JSON] [ApiItem]
     :<|> "app_text" :> Get '[JSON] T.Text
     :<|> "tag" :> ReqBody '[JSON] Text :> Post '[JSON] [ApiTag]
