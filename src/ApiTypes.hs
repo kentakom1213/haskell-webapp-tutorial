@@ -65,7 +65,7 @@ toApiItemFE (Entity iid i) =
       apiItemDescription = itemDescription i,
       apiItemDeadline = itemDeadline i,
       apiItemAccountId = itemAccountId i,
-      apiItemParentId = Nothing
+      apiItemParentId = itemParentId i
     }
 
 data ApiTag = ApiTag
@@ -105,7 +105,8 @@ data ApiItemReqBody = ApiItemReqBody
   { apiItemReqBodyTitle :: Maybe Text,
     apiItemReqBodyDescription :: Maybe Text,
     apiItemReqBodyDeadline :: Maybe UTCTime,
-    apiItemReqBodyAccountId :: Maybe AccountId
+    apiItemReqBodyAccountId :: Maybe AccountId,
+    apiItemReqBodyParentId :: Maybe (Maybe ItemId)
   }
   deriving (Generic, Show)
 

@@ -34,6 +34,7 @@ share
     description Text
     deadline UTCTime
     accountId AccountId
+    parentId ItemId Maybe
 
     deriving Show
 

@@ -80,18 +80,31 @@ postItem
     { apiItemReqBodyTitle = m_title,
       apiItemReqBodyDescription = Just description,
       apiItemReqBodyDeadline = Just deadline,
-      apiItemReqBodyAccountId = Just pid
+      apiItemReqBodyAccountId = Just pid,
+      apiItemReqBodyParentId = Just parent_id
     } = errorHandler $ runSql $ do
     -- title <- maybe (throwM err400 {errBody = "Invalid request body"}) return m_title
     title <- case m_title of
       Just t -> return t
       Nothing -> throwM err400 {errBody = "Invalid request body"}
+
+    -- parent_id を持つ item が存在するか確認
+    -- → 存在する場合 → Just parent_id
+    -- → 存在しない場合 → エラー
+    -- → Nothing の場合は、そのまま
+    valid_parent_id <- case parent_id of
+      Just pid' -> do
+        _ <- fromJustWithError (err400, "No such parent item ID") =<< get pid'
+        return $ Just pid'
+      Nothing -> return Nothing
+
     insert_
       Item
         { itemTitle = title,
           itemDescription = description,
           itemDeadline = deadline,
-          itemAccountId = pid
+          itemAccountId = pid,
+          itemParentId = valid_parent_id
         }
     getItemList'
 postItem _ = throwM err400 {errBody = "Invalid request body"}
