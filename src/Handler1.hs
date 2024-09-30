@@ -131,6 +131,18 @@ postTag tag = errorHandler $ runSql $ do
       { tagName = tag,
         tagDeletedAt = Nothing
       }
+  getTagList'
+
+-- タグ一覧の取得
+getTagList :: MyAppHandler [ApiTag]
+getTagList = errorHandler $ runSql $ do
+  tlist <- select $ from $ \t -> do
+    return t
+
+  return $ toApiTagFE <$> tlist
+
+getTagList' :: SqlPersistM' [ApiTag]
+getTagList' = do
   tlist <- select $ from $ \t -> do
     return t
 

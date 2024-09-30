@@ -119,6 +119,7 @@ type MyAppAPI' =
     :<|> "items" :> Get '[JSON] [ApiItem]
     :<|> "app_text" :> Get '[JSON] T.Text
     :<|> "tag" :> ReqBody '[JSON] Text :> Post '[JSON] [ApiTag]
+    :<|> "tags" :> Get '[JSON] [ApiTag]
 
 -- add "/api" prefix
 type MyAppAPI = "api" :> MyAppAPI'
@@ -134,6 +135,7 @@ myAppServer =
     :<|> getItemList
     :<|> printAppText
     :<|> postTag
+    :<|> getTagList
 
 -----------------------------
 -- Command line processing --
