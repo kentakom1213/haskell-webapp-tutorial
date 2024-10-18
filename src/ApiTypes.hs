@@ -200,7 +200,9 @@ elmApiExport =
         DefineElm (Proxy :: Proxy ApiTag),
         DefineElm (Proxy :: Proxy ApiItemReqBody),
         DefineElm (Proxy :: Proxy ItemId),
-        DefineElm (Proxy :: Proxy TagId)
+        DefineElm (Proxy :: Proxy TagId),
+        DefineElm (Proxy :: Proxy ApiItemList)
+
         -- , DefineElm    (Proxy :: Proxy LoggerId)
         -- , DefineElm    (Proxy :: Proxy LoggerHistoryId)
         -- , DefineElm    (Proxy :: Proxy SectionId)
