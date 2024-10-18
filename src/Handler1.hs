@@ -5,10 +5,16 @@ module Handler1 where
 import ApiTypes
 import Control.Exception.Safe (throwM)
 import Control.Monad.Reader (asks)
+import qualified Data.Aeson.KeyMap as Map
+import Data.List (nub)
+import Data.Map as Map (Map, empty, fromList, fromListWith, lookup, toList)
+import qualified Data.Maybe as Map
 import Data.Text as T (Text)
 import Database.Esqueleto
+import Database.Esqueleto (valList, where_)
 import Debug.Trace
 import Model
+import Model (EntityField (TagId), TagItem (tagItemTagId))
 import Servant
 import Types
 import Utils
@@ -52,28 +58,45 @@ getAccountItems pid = errorHandler $ runSql $ do
     where_ (i ^. ItemAccountId ==. val pid)
     return i
 
-  return $ toApiItemFE <$> ilist
+  return $ toApiItemFE Map.empty <$> ilist
 
 --- Item
 getItemList :: MyAppHandler [ApiItem]
 getItemList = errorHandler $ runSql $ do
-  ilist <- select $ from $ \i -> do
-    return i
-
-  return $ toApiItemFE <$> ilist
+  getItemList'
 
 getItem' :: ItemId -> SqlPersistM' ApiItem
 getItem' iid = do
   i <- fromJustWithError (err404, "No such item ID") =<< get iid
 
-  return $ toApiItemFE (Entity iid i)
+  return $ toApiItemFE Map.empty (Entity iid i)
 
 getItemList' :: SqlPersistM' [ApiItem]
 getItemList' = do
-  ilist <- select $ from $ \i -> do
+  -- SELECT * FROM item LEFT OUTER JOIN tag_item ON tag_item.item_id = item.id;
+  list <- select $ from $ \(i `LeftOuterJoin` ti) -> do
+    on $ just (i ^. ItemId) ==. ti ?. TagItemItemId
+
+    return (i, ti)
+
+  let ilist = snd <$> toList (Map.fromList $ (\(Entity iid i, _) -> (iid, Entity iid i)) <$> list)
+
+      itmap = Map.fromListWith (++) $ (\(Entity iid i, me_ti) -> (iid, maybe [] (\(Entity _ ti) -> [tagItemTagId ti]) me_ti)) <$> list
+
+      tilist = Map.mapMaybe snd list
+
+      tagidlist = nub $ (\Entity _ ti -> tagItemTagId ti) <$> tilist
+
+  taglist <- select $ from $ \i -> do
+    where_ $ i ^. TagId `in_` valList tagidlist
+
     return i
 
-  return $ toApiItemFE <$> ilist
+  -- item <- toApiItemFE ....
+  -- tag <- toApiTagFE ...
+  -- return $ ApiItemList ....
+
+  return $ toApiItemFE itmap <$> ilist
 
 postItem :: ApiItemReqBody -> MyAppHandler [ApiItem]
 postItem
@@ -136,10 +159,7 @@ postTag tag = errorHandler $ runSql $ do
 -- タグ一覧の取得
 getTagList :: MyAppHandler [ApiTag]
 getTagList = errorHandler $ runSql $ do
-  tlist <- select $ from $ \t -> do
-    return t
-
-  return $ toApiTagFE <$> tlist
+  getTagList'
 
 getTagList' :: SqlPersistM' [ApiTag]
 getTagList' = do

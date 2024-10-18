@@ -47,6 +47,7 @@ dependencies:
 - elm-bridge
 - template-haskell
 - yaml
+- containers
 
 ghc-options:
 - -Wall

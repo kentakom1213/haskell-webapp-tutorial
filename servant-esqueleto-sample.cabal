@@ -45,6 +45,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , cases
+    , containers
     , data-default
     , elm-bridge
     , esqueleto
@@ -91,6 +92,7 @@ executable servant-esqueleto-sample
     , base >=4.7 && <5
     , bytestring
     , cases
+    , containers
     , data-default
     , elm-bridge
     , esqueleto

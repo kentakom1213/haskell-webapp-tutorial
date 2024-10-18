@@ -7,8 +7,10 @@ module ApiTypes where
 
 import Data.Aeson as Json
 import Data.Aeson.Internal (JSONPathElement (Key), (<?>))
+import Data.Map as Map
 import Data.Aeson.TH (deriveFromJSON, deriveToJSON)
 import Data.HashMap.Strict as HM (lookup)
+import Data.Maybe (fromMaybe)
 import Data.Proxy (Proxy (..))
 import Data.Text as T (Text)
 import Data.Time (UTCTime)
@@ -51,21 +53,23 @@ data ApiItem = ApiItem
     apiItemDescription :: Text,
     apiItemDeadline :: UTCTime,
     apiItemAccountId :: AccountId,
-    apiItemParentId :: Maybe ItemId
+    apiItemParentId :: Maybe ItemId,
+    apiItemTagIdList :: [TagId]
   }
   deriving (Generic, Show)
 
 $(deriveJsonNoTypeNamePrefix' ''ApiItem)
 
-toApiItemFE :: Entity Item -> ApiItem
-toApiItemFE (Entity iid i) =
+toApiItemFE :: Map ItemId [TagId] -> Entity Item -> ApiItem
+toApiItemFE itmap (Entity iid i) =
   ApiItem
     { apiItemId = iid,
       apiItemTitle = itemTitle i,
       apiItemDescription = itemDescription i,
       apiItemDeadline = itemDeadline i,
       apiItemAccountId = itemAccountId i,
-      apiItemParentId = itemParentId i
+      apiItemParentId = itemParentId i,
+      apiItemTagIdList = fromMaybe [] $ Map.lookup iid itmap
     }
 
 data ApiTag = ApiTag
