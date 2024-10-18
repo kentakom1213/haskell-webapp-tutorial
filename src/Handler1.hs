@@ -5,12 +5,31 @@ module Handler1 where
 import ApiTypes
 import Control.Exception.Safe (throwM)
 import Control.Monad.Reader (asks)
+import Data.Aeson.Encoding (list)
+import qualified Data.Aeson.KeyMap as List
 import qualified Data.Aeson.KeyMap as Map
-import Data.List (nub)
-import Data.Map as Map (Map, empty, fromList, fromListWith, lookup, toList)
+import Data.List as List (elem, find, nub)
+import Data.Map (Map, empty, findWithDefault, fromList, fromListWith, lookup, mapMaybe, toList)
 import qualified Data.Maybe as Map
+import Data.Maybe as Maybe (mapMaybe, fromMaybe)
 import Data.Text as T (Text)
 import Database.Esqueleto
+    ( Entity(Entity),
+      PersistStoreRead(get),
+      PersistStoreWrite(insert_, insert),
+      (==.),
+      (?.),
+      (^.),
+      delete,
+      from,
+      in_,
+      just,
+      on,
+      select,
+      val,
+      valList,
+      where_,
+      LeftOuterJoin(LeftOuterJoin) )
 import Database.Esqueleto (valList, where_)
 import Debug.Trace
 import Model
@@ -52,7 +71,7 @@ postAccount
           }
 postAccount _ = throwM err400 {errBody = "Invalid request body"}
 
-getAccountItems :: AccountId -> MyAppHandler [ApiItem]
+getAccountItems :: AccountId -> MyAppHandler ApiItemList
 getAccountItems pid = errorHandler $ runSql $ do
   ilist <- select $ from $ \i -> do
     where_ (i ^. ItemAccountId ==. val pid)
@@ -61,7 +80,7 @@ getAccountItems pid = errorHandler $ runSql $ do
   return $ toApiItemFE Map.empty <$> ilist
 
 --- Item
-getItemList :: MyAppHandler [ApiItem]
+getItemList :: MyAppHandler ApiItemList
 getItemList = errorHandler $ runSql $ do
   getItemList'
 
@@ -69,36 +88,37 @@ getItem' :: ItemId -> SqlPersistM' ApiItem
 getItem' iid = do
   i <- fromJustWithError (err404, "No such item ID") =<< get iid
 
-  return $ toApiItemFE Map.empty (Entity iid i)
+  return $ toApiItemFE Data.Map.empty (Entity iid i)
 
-getItemList' :: SqlPersistM' [ApiItem]
+getItemList' :: SqlPersistM' ApiItemList
 getItemList' = do
   -- SELECT * FROM item LEFT OUTER JOIN tag_item ON tag_item.item_id = item.id;
-  list <- select $ from $ \(i `LeftOuterJoin` ti) -> do
+  list' <- select $ from $ \(i `LeftOuterJoin` ti) -> do
     on $ just (i ^. ItemId) ==. ti ?. TagItemItemId
-
     return (i, ti)
 
-  let ilist = snd <$> toList (Map.fromList $ (\(Entity iid i, _) -> (iid, Entity iid i)) <$> list)
+  let ilist = snd <$> toList (Data.Map.fromList $ (\(Entity iid i, _) -> (iid, Entity iid i)) <$> list')
 
-      itmap = Map.fromListWith (++) $ (\(Entity iid i, me_ti) -> (iid, maybe [] (\(Entity _ ti) -> [tagItemTagId ti]) me_ti)) <$> list
+      itmap = Data.Map.fromListWith (++) $ (\(Entity iid i, me_ti) -> (iid, maybe [] (\(Entity _ ti) -> [tagItemTagId ti]) me_ti)) <$> list'
 
-      tilist = Map.mapMaybe snd list
+      tilist = Maybe.mapMaybe snd list'
 
-      tagidlist = nub $ (\Entity _ ti -> tagItemTagId ti) <$> tilist
+      tagidlist = nub $ (\(Entity _ ti) -> tagItemTagId ti) <$> tilist
 
-  taglist <- select $ from $ \i -> do
-    where_ $ i ^. TagId `in_` valList tagidlist
+  -- traceM $ show ilist
+  -- traceM $ show itmap
 
-    return i
+  -- tag テーブルから該当する tag を取得
+  taglist <- select $ from $ \t -> do
+    where_ $ t ^. TagId `in_` valList tagidlist
+    return t
 
-  -- item <- toApiItemFE ....
-  -- tag <- toApiTagFE ...
-  -- return $ ApiItemList ....
+  let apiitem = toApiItemFE itmap <$> ilist
+      apitag = toApiTagFE <$> taglist
 
-  return $ toApiItemFE itmap <$> ilist
+  return $ ApiItemList {apiItemListItem = apiitem, apiItemListTag = apitag}
 
-postItem :: ApiItemReqBody -> MyAppHandler [ApiItem]
+postItem :: ApiItemReqBody -> MyAppHandler ApiItemList
 postItem
   ApiItemReqBody
     { apiItemReqBodyTitle = m_title,
@@ -132,7 +152,7 @@ postItem
     getItemList'
 postItem ng = trace ("Invalid Value: " ++ show ng) throwM err400 {errBody = "Invalid request body"}
 
-deleteItem :: ItemId -> MyAppHandler [ApiItem]
+deleteItem :: ItemId -> MyAppHandler ApiItemList
 deleteItem iid = errorHandler $ runSql $ do
   delete $ from $ \i -> do
     where_ (i ^. ItemId ==. val iid)

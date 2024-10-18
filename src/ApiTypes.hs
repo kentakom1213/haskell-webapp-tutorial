@@ -87,6 +87,14 @@ toApiTagFE (Entity tid t) =
       apiTagName = tagName t
     }
 
+data ApiItemList = ApiItemList
+  { apiItemListItem :: [ApiItem],
+    apiItemListTag :: [ApiTag]
+  }
+  deriving (Generic, Show)
+
+$(deriveJsonNoTypeNamePrefix' ''ApiItemList)
+
 ----------------------------------------
 -- API type defintion for API request --
 ----------------------------------------
