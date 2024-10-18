@@ -10,27 +10,10 @@ import qualified Data.Aeson.KeyMap as List
 import qualified Data.Aeson.KeyMap as Map
 import Data.List as List (elem, find, nub)
 import Data.Map (Map, empty, findWithDefault, fromList, fromListWith, lookup, mapMaybe, toList)
+import Data.Maybe as Maybe (fromMaybe, mapMaybe)
 import qualified Data.Maybe as Map
-import Data.Maybe as Maybe (mapMaybe, fromMaybe)
 import Data.Text as T (Text)
-import Database.Esqueleto
-    ( Entity(Entity),
-      PersistStoreRead(get),
-      PersistStoreWrite(insert_, insert),
-      (==.),
-      (?.),
-      (^.),
-      delete,
-      from,
-      in_,
-      just,
-      on,
-      select,
-      val,
-      valList,
-      where_,
-      LeftOuterJoin(LeftOuterJoin) )
-import Database.Esqueleto (valList, where_)
+import Database.Esqueleto (Entity (Entity), LeftOuterJoin (LeftOuterJoin), PersistStoreRead (get), PersistStoreWrite (insert, insert_), delete, from, in_, just, on, select, val, valList, where_, (==.), (?.), (^.))
 import Debug.Trace
 import Model
 import Model (EntityField (TagId), TagItem (tagItemTagId))
@@ -77,7 +60,11 @@ getAccountItems pid = errorHandler $ runSql $ do
     where_ (i ^. ItemAccountId ==. val pid)
     return i
 
-  return $ toApiItemFE Map.empty <$> ilist
+  -- return $ toApiItemFE Map.empty <$> ilist
+
+  let itmap = Data.Map.fromListWith (++) $ (\(Entity iid i) -> (iid, [])) <$> ilist
+
+  return $ ApiItemList {apiItemListItem = toApiItemFE itmap <$> ilist, apiItemListTag = []}
 
 --- Item
 getItemList :: MyAppHandler ApiItemList
